@@ -16,7 +16,7 @@ public class MainActivity extends Activity {
 
     // TODO: Declare member variables here:
     Button TButton, Fbutton;
-    TextView mTextView;
+    TextView mTextView,qanswer;
     int mindex;
     int mquestion;
     TextView score;
@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
             new TrueFalse(R.string.question_13, true)
     };
     // TODO: Declare constants here
-    final int PROGRESS_BAR_INCREMENT = 8 / mQuestionBank.length;
+    final int PROGRESS_BAR_INCREMENT =   (int)Math.ceil(100/mQuestionBank.length);
 
     public MainActivity() {
     }
@@ -51,16 +51,35 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if(savedInstanceState!=null){
+            startScore=savedInstanceState.getInt("ScoreKey");
+            mindex=savedInstanceState.getInt("IndexKey");
+
+        }else{
+            startScore=0;
+            mindex=0;
+        }
+
         TButton = findViewById(R.id.true_button);
         Fbutton = findViewById(R.id.false_button);
+        mProgressBar = findViewById(R.id.progress_bar);
+        mTextView = findViewById(R.id.question_text_view);
+        score = findViewById(R.id.score);
+        qanswer=findViewById(R.id.qanser);
+
+        mquestion = mQuestionBank[mindex].getQuestionID();
+        mTextView.setText(mquestion);
+        score.setText("Score " + startScore + "/" + mQuestionBank.length);
+
+
+
+
         //true button Listener
         TButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                updatequestions();
                 rightAnwnser(true);
-
-
+                updatequestions();
             }
         });
 
@@ -68,42 +87,40 @@ public class MainActivity extends Activity {
         Fbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                updatequestions();
                 rightAnwnser(false);
-
+                updatequestions();
             }
         });
         //get the first question
-        mTextView = findViewById(R.id.question_text_view);
         //mindex =0
-        mquestion = mQuestionBank[mindex].getQuestionID();
         //mquestion = اول سؤال
-        score = findViewById(R.id.score);
-        mProgressBar = findViewById(R.id.progress_bar);
 
     }
+
 
     public void rightAnwnser(boolean userlocation) {
         boolean checkanwnser = mQuestionBank[mindex].getAnswer();
 
         if (userlocation == checkanwnser) {
-            Toast.makeText(getApplicationContext(), R.string.correct_toast, Toast.LENGTH_SHORT).show();
-            startScore = startScore + 1;
-        } else {
-            Toast.makeText(getApplicationContext(), R.string.incorrect_toast, Toast.LENGTH_SHORT).show();
-        }
 
+            qanswer.setText(R.string.correct_toast);
+            startScore = startScore + 1;
+            score.setText("Score " + startScore + "/" + mQuestionBank.length);
+
+
+        } else {
+            qanswer.setText(R.string.incorrect_toast);
+        }
 
     }
 
-
-
     void updatequestions() {
+        mTextView.setText(mquestion);
         if (mindex == (mQuestionBank.length - 1)) {
             AlertDialog.Builder mBuilder = new AlertDialog.Builder(this);
             mBuilder.setTitle("quiz end");
             mBuilder.setCancelable(false);
-            mBuilder.setMessage("your score " + startScore + " Points!");
+            mBuilder.setMessage("your score " + (startScore) + " Points!");
             mBuilder.setPositiveButton("Close App", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
@@ -112,14 +129,19 @@ public class MainActivity extends Activity {
             });
             mBuilder.show();
         } else {
-            mindex = mindex + 1;
             mquestion = mQuestionBank[mindex].getQuestionID();
-            mTextView.setText(mquestion);
-            score.setText("Score " + startScore + "/" + mQuestionBank.length);
+            mindex = mindex + 1;
             mProgressBar.incrementProgressBy(PROGRESS_BAR_INCREMENT);
-            mTextView.setText(mquestion);
 
         }
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putInt("ScoreKey", startScore);
+        outState.putInt("IndexKey",mindex);
 
     }
 
